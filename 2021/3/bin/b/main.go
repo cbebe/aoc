@@ -13,62 +13,79 @@ func toNumBits(mask, num int64) string {
 	return strconv.FormatInt(num&mask, 2)
 }
 
+func findBit(bins []string, most bool) int64 {
+	cp := make([]string, len(bins))
+	copy(cp, bins)
+	for i := 0; i <= len(bins[0]); i++ {
+		if len(cp) == 1 {
+			num, err := strconv.ParseInt(cp[0], 2, 64)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			return num
+		}
+		n := 0
+		for j := 0; j < len(cp); j++ {
+			q := cp[j][i]
+			if q == byte('1') {
+				n++
+			}
+		}
+		fmt.Printf("%d ", n)
+		var common byte
+		if most {
+			if n >= (len(cp) - n) {
+				common = '1'
+			} else {
+				common = '0'
+			}
+
+		} else {
+			if n >= (len(cp) - n) {
+				common = '0'
+			} else {
+				common = '1'
+			}
+		}
+
+		newCp := make([]string, 0)
+		for j := 0; j < len(cp); j++ {
+			q := cp[j][i]
+			if q == common {
+				newCp = append(newCp, cp[j])
+			}
+		}
+		cp = newCp
+		fmt.Printf("%v\n", cp)
+	}
+	return -1
+}
+
 func main() {
 	input, err := script.File("input.txt").String()
+	// input, err := script.File("test.txt").String()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	numbits := 0
-	var bits []int64
 	lines := strings.Split(input, "\n")
-	var numlines int64 = 0
-	var bins []int64
+	numbits := 0
+	var numlines int = 0
+	var bins []string
 	for _, v := range lines {
 		if v == "" {
 			continue
 		}
 		numlines++
+		w := strings.TrimSpace(v)
 		if numbits == 0 {
-			numbits = len(v)
-			bits = make([]int64, numbits)
+			numbits = len(w)
 		}
-		bin, err := strconv.ParseInt(v, 2, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		bins = append(bins, bin)
-
-		for i := 0; i < numbits; i++ {
-			if bin&(1<<i) != 0 {
-				bits[i]++
-			}
-		}
+		bins = append(bins, w)
 	}
 
-	var mask int64 = 0
-	for i := 0; i < numbits; i++ {
-		mask <<= 1
-		mask |= 1
-	}
-	fmt.Printf("%v\n", mask)
-
-	var oxy int64 = 0
-	var co2 int64 = 0
-	oxynums := make([]int64, len(bins))
-	copy(oxynums, bins)
-	co2nums := make([]int64, len(bins))
-	copy(co2nums, bins)
-	for i := numbits - 1; i >= 0; i-- {
-		oxy <<= 1
-		co2 <<= 1
-		if bits[i] >= (numlines - bits[i]) {
-			co2 |= 1
-		} else {
-			oxy |= 1
-		}
-		fmt.Printf("eps: %v, gam: %v\n", toNumBits(mask, oxy), toNumBits(mask, co2))
-	}
+	var oxy int64 = findBit(bins, true)
+	var co2 int64 = findBit(bins, false)
 	fmt.Printf("%v %v\n", oxy, co2)
 	fmt.Println(oxy * co2)
 }
