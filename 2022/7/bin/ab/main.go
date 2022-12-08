@@ -104,14 +104,23 @@ func main() {
 		}
 	}
 
+	totalSize := 70000000
+	need := 30000000
+
 	sizes = map[string]int{}
-	sizes["/"] = root.Size()
-	fmt.Println(sizes)
+	used := root.Size()
+	unused := totalSize - used
 	atmost := 0
+	minSize := used
 	for _, v := range sizes {
 		if v <= 100000 {
 			atmost += v
 		}
+		if unused+v > need && v < minSize {
+			minSize = v
+
+		}
 	}
-	fmt.Println(atmost)
+	fmt.Printf("atmost: %d\n", atmost)
+	fmt.Printf("min: %d\n", minSize)
 }
