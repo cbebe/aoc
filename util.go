@@ -35,6 +35,18 @@ func ParseInt(v string) int {
 	return num
 }
 
+func ParseSplit(v, sep string) []int {
+	arr := strings.Split(v, sep)
+	ints := make([]int, 0)
+	for _, a := range arr {
+		if a == "" {
+			continue
+		}
+		ints = append(ints, ParseInt(a))
+	}
+	return ints
+}
+
 func InRange[T constraints.Ordered](x, a, b T) bool {
 	return x >= a && x <= b
 }
