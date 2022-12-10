@@ -86,6 +86,19 @@ func MaxMap[T constraints.Ordered, K comparable](m map[K]T) T {
 	return max
 }
 
+// Oof at Golang generics
+func MinMap[T constraints.Ordered, K comparable](m map[K]T, max T) (K, T) {
+	var min = max
+	var key K
+	for k, v := range m {
+		if v < min {
+			min = v
+			key = k
+		}
+	}
+	return key, min
+}
+
 func MinMax[T constraints.Ordered](a, b T) (T, T) {
 	if a > b {
 		return b, a
