@@ -5,15 +5,14 @@ import (
 	"io"
 	"log"
 	"runtime"
-	"sort"
 	"strings"
 
 	"github.com/cbebe/aoc"
 )
 
 func main() {
-	// f := "input.txt"
-	f := "test.txt"
+	f := "input.txt"
+	// f := "test.txt"
 
 	_, filename, _, _ := runtime.Caller(0)
 	lines := aoc.Lines(f, filename)
@@ -37,19 +36,19 @@ func (s Seg) AsInt() int {
 	for k := range s.Set {
 		switch k {
 		case 'a':
-			num += (1 << 0)
+			num += int(A)
 		case 'b':
-			num += (1 << 1)
+			num += int(B)
 		case 'c':
-			num += (1 << 2)
+			num += int(C)
 		case 'd':
-			num += (1 << 3)
+			num += int(D)
 		case 'e':
-			num += (1 << 4)
+			num += int(E)
 		case 'f':
-			num += (1 << 5)
+			num += int(F)
 		case 'g':
-			num += (1 << 6)
+			num += int(G)
 		}
 	}
 
@@ -71,13 +70,15 @@ const (
 var segmap map[rune]Segment
 
 type Segs struct {
-	ints map[int]int
-	segs map[int]Seg
+	ints  map[int]int
+	segs  map[int]Seg
+	hints []string
 }
 
 func horizontal(w io.Writer, s rune) {
 	fmt.Fprintf(w, " %s \n", strings.Repeat(string(s), 4))
 }
+
 func vertical(w io.Writer, a, b rune) {
 	for i := 0; i < 2; i++ {
 		fmt.Fprintf(w, "%s    %s\n", string(a), string(b))
@@ -86,32 +87,19 @@ func vertical(w io.Writer, a, b rune) {
 
 func (s Seg) String() string {
 	lit := aoc.Set[Segment]{}
-	var sb strings.Builder
+	oop := func(i Segment, r rune) rune {
+		if lit.Has(i) {
+			return r
+		} else {
+			return '.'
+		}
+	}
 	for k := range s.Set {
 		lit.Add(segmap[k])
 	}
-	a, b, c, d, e, f, g := '.', '.', '.', '.', '.', '.', '.'
-	if lit.Has(A) {
-		a = 'a'
-	}
-	if lit.Has(B) {
-		b = 'b'
-	}
-	if lit.Has(C) {
-		c = 'c'
-	}
-	if lit.Has(D) {
-		d = 'd'
-	}
-	if lit.Has(E) {
-		e = 'e'
-	}
-	if lit.Has(F) {
-		f = 'f'
-	}
-	if lit.Has(G) {
-		g = 'g'
-	}
+	a, b, c, d := oop(A, 'a'), oop(B, 'b'), oop(C, 'c'), oop(D, 'd')
+	e, f, g := oop(E, 'e'), oop(F, 'f'), oop(G, 'g')
+	var sb strings.Builder
 	horizontal(&sb, a)
 	vertical(&sb, b, c)
 	horizontal(&sb, d)
@@ -121,125 +109,95 @@ func (s Seg) String() string {
 }
 
 func (s *Segs) Add(num int, segs string) {
-	s.ints[toSeg(segs).AsInt()] = num
-	s.segs[num] = toSeg(segs)
+	seg := toSeg(segs)
+	s.ints[seg.AsInt()] = num
+	s.segs[num] = seg
 }
 
 func (s Segs) Get(num int) Seg {
 	return s.segs[num]
 }
 
-func (s Seg) Diff(other Seg, by int) bool {
-	return len(s.Difference(other.Set)) == by
+func (s Seg) Match(other Seg) bool {
+	in := s.Intersection(other.Set)
+	return len(in) == len(s.Set)
 }
 
 func createNums(hints []string) map[int]int {
-	segmap = make(map[rune]Segment)
-	sort.Slice(hints, func(i, j int) bool {
-		return len(hints[i]) < len(hints[j])
-	})
-
-	fmt.Println(hints)
-	s := Segs{map[int]int{}, map[int]Seg{}}
-	//  ....
-	// .    c
-	// .    c
-	//  ....
-	// .    f
-	// .    f
-	//  ....
-	s.Add(1, hints[0])
-	s.Add(7, hints[1])
-	s.Add(4, hints[2])
-	s.Add(8, hints[9])
-
-	segmap[s.Get(7).Difference(s.Get(1).Set).First()] = A
-
-	//  aaaa
-	// b    c
-	// b    c
-	//  dddd
-	// .    f
-	// .    f
-	//  ....
-	abcdf := s.Get(1).Union(s.Get(7).Set).Union(s.Get(4).Set)
-
-	s.Add(9, findNine(hints, Seg{abcdf}))
-	segmap[s.Get(9).Difference(abcdf).First()] = G
-	s.Add(2, findTwo(hints, s.Get(9)))
-	s.Add(3, findThree(hints, s.Get(2)))
-
-	//  ....
-	// .    .
-	// .    .
-	//  ....
-	// e    .
-	// e    .
-	//  ....
-	e := s.Get(2).Difference(s.Get(3).Set)
-	segmap[e.First()] = E
-	//  ....
-	// .    .
-	// .    .
-	//  ....
-	// .    f
-	// .    f
-	//  ....
-	f := s.Get(3).Difference(s.Get(2).Set)
+	fives := []string{}
+	sixes := []string{}
+	s := Segs{map[int]int{}, map[int]Seg{}, hints}
+	for _, v := range hints {
+		switch len(v) {
+		case 2:
+			s.Add(1, v)
+		case 3:
+			s.Add(7, v)
+		case 4:
+			s.Add(4, v)
+		case 5:
+			fives = append(fives, v)
+		case 6:
+			sixes = append(sixes, v)
+		case 7:
+			s.Add(8, v)
+		default:
+			log.Fatalf("invalid len: %s", v)
+		}
+	}
+	one := s.Get(1).Set
+	four := s.Get(4).Set
+	eight := s.Get(8).Set
+	a := s.Get(7).Difference(one)
+	segmap[a.First()] = A
+	s.Add(6, Find(sixes, func(o string) bool { return !toSeg(o).Subset(one) }))
+	c := one.Difference(s.Get(6).Set)
+	segmap[c.First()] = C
+	f := one.Difference(c)
 	segmap[f.First()] = F
-	fmt.Println(s.Get(1).Set)
-	fmt.Println(e, f)
-	fmt.Println(1)
-	fmt.Println(s.Get(1))
-	fmt.Println(2)
-	fmt.Println(s.Get(2))
-	fmt.Println(3)
-	fmt.Println(s.Get(3))
-	fmt.Println(4)
-	fmt.Println(s.Get(4))
-	fmt.Println(7)
-	fmt.Println(s.Get(7))
-	fmt.Println(8)
-	fmt.Println(s.Get(8))
-	fmt.Println(9)
-	fmt.Println(s.Get(9))
-	s.Add(5, findFive(hints, s.Get(2)))
-	s.Add(6, findSix(hints, Seg{e.Union(s.Get(5).Set)}))
+	fivesChars := toSeg(fives[0]).Set
+	for _, v := range fives[1:] {
+		fivesChars = fivesChars.Intersection(toSeg(v).Set)
+	}
+	g := fivesChars.Difference(four).Difference(a)
+	segmap[g.First()] = G
+	nine := g.Union(a).Union(four)
+	s.Add(9, MatchSeg(sixes, nine))
+	e := eight.Difference(nine)
+	segmap[e.First()] = E
+	s.Add(2, Find(fives, func(o string) bool { return toSeg(o).Subset(e) }))
+	two := s.Get(2).Set
+	d := two.Difference(a).Difference(c).Difference(e).Difference(g)
+	segmap[d.First()] = D
+	three := one.Union(a).Union(d).Union(g)
+	s.Add(3, MatchSeg(fives, three))
+	b := four.Difference(three)
+	segmap[b.First()] = B
+	five := a.Union(b).Union(d).Union(f).Union(g)
+	s.Add(5, MatchSeg(fives, five))
+	zero := a.Union(b).Union(c).Union(e).Union(f).Union(g)
+	s.Add(0, MatchSeg(sixes, zero))
 
 	return s.ints
 }
 
-func findNum(hints []string, pred func(v string) bool, start int, name string) string {
-	for _, v := range hints[start : start+3] {
-		if pred(v) {
+func MatchSeg(hints []string, s aoc.Set[rune]) string {
+	return Find(hints, func(o string) bool { return Seg{s}.Match(toSeg(o)) })
+}
+
+func Find[T any](arr []T, where func(T) bool) T {
+	for _, v := range arr {
+		if where(v) {
 			return v
 		}
 	}
-	log.Fatalf("can't find %s\n", name)
-	return ""
-}
-
-func findTwo(hints []string, nine Seg) string {
-	return findNum(hints, func(v string) bool { return !nine.Subset(toSeg(v).Set) }, 3, "two")
-}
-
-func findThree(hints []string, two Seg) string {
-	return findNum(hints, func(v string) bool { return two.Diff(toSeg(v), 1) }, 3, "three")
-}
-
-func findFive(hints []string, two Seg) string {
-	return findNum(hints, func(v string) bool { return two.Diff(toSeg(v), 2) }, 3, "five")
-}
-
-func findSix(hints []string, six Seg) string {
-	return findNum(hints, func(v string) bool { return six.Diff(toSeg(v), 0) }, 6, "six")
-}
-
-func findNine(hints []string, abcdf Seg) string {
-	return findNum(hints, func(v string) bool { return abcdf.Diff(toSeg(v), 1) }, 6, "nine")
+	log.Fatalf("could not find")
+	var t T
+	return t
 }
 
 func PartB(lines []string) {
+	segmap = map[rune]Segment{}
 	total := 0
 	for _, v := range lines {
 		if v == "" {
@@ -251,8 +209,7 @@ func PartB(lines []string) {
 		nums := strings.Split(arr[1], " ")
 		n := 0
 		for _, num := range nums {
-			n *= 10
-			n += numMap[toSeg(num).AsInt()]
+			n = (n * 10) + numMap[toSeg(num).AsInt()]
 		}
 		total += n
 	}
@@ -265,13 +222,11 @@ func PartA(lines []string) {
 		if v == "" {
 			continue
 		}
-		nums := strings.Split(strings.Split(v, " | ")[1], " ")
-		for _, num := range nums {
+		for _, num := range strings.Split(strings.Split(v, " | ")[1], " ") {
 			n := len(num)
 			if n == 2 || n == 3 || n == 4 || n == 7 {
 				total++
 			}
-
 		}
 	}
 	fmt.Println(total)

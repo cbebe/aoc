@@ -54,6 +54,16 @@ func (s *Set[T]) Has(item T) bool {
 	return ok
 }
 
+func (s Set[T]) Intersection(other Set[T]) Set[T] {
+	intersect := Set[T]{}
+	for k := range s {
+		if other.Has(k) {
+			intersect.Add(k)
+		}
+	}
+	return intersect
+}
+
 func (s Set[T]) Union(other Set[T]) Set[T] {
 	union := Set[T]{}
 	for k := range s {
