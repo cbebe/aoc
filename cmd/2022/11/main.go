@@ -16,15 +16,15 @@ type Monkey struct {
 	f         int
 	inspected int
 	div       int
-	partA     bool
 }
 
 func (m *Monkey) test(i int) bool {
 	return i%m.div == 0
 }
 
-func ParseMonkeys(monke []string, partA bool) []*Monkey {
+func ParseMonkeys(monke []string, partA bool) ([]*Monkey, int) {
 	monkeys := []*Monkey{}
+	lcm := 1
 	for _, v := range monke {
 		if v == "" {
 			continue
@@ -33,13 +33,14 @@ func ParseMonkeys(monke []string, partA bool) []*Monkey {
 		items := aoc.ParseSplit(strings.Split(arr[1], "Starting items: ")[1], ", ")
 		op := parseOp(strings.Split(arr[2], "Operation: ")[1])
 		div := aoc.ParseInt(strings.Split(arr[3], "Test: divisible by ")[1])
+		lcm *= div
 		to := aoc.ParseInt(strings.Split(arr[4], "If true: throw to monkey ")[1])
 		from := aoc.ParseInt(strings.Split(arr[5], "If false: throw to monkey ")[1])
 
 		q := aoc.Queue[int](items)
-		monkeys = append(monkeys, &Monkey{&q, op, to, from, 0, div, partA})
+		monkeys = append(monkeys, &Monkey{&q, op, to, from, 0, div})
 	}
-	return monkeys
+	return monkeys, lcm
 }
 
 func (m *Monkey) String() string {
@@ -66,16 +67,17 @@ func PrintMonkeys(monkeys []*Monkey, i int, partA bool) {
 func main() {
 	f := "input.txt"
 	// f := "test.txt"
-	partA := true
-	// partA := false
+	// partA := true
+	partA := false
 	rounds := 20
 	if !partA {
+		// rounds = 4
 		rounds = 10000
 	}
 
 	_, filename, _, _ := runtime.Caller(0)
 	file := aoc.ReadFile(f, filename)
-	monkeys := ParseMonkeys(strings.Split(file, "\n\n"), partA)
+	monkeys, lcm := ParseMonkeys(strings.Split(file, "\n\n"), partA)
 	PrintMonkeys(monkeys, -1, partA)
 	toPrint := aoc.Set[int]{}
 	toPrint.AddSlice([]int{1, 20, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000})
@@ -103,6 +105,8 @@ func main() {
 					}
 					if partA {
 						fmt.Printf("  Item with worry level %d is thrown to Monkey %d.\n\n", worry, to)
+					} else {
+						worry %= lcm
 					}
 					monkeys[to].items.Push(worry)
 				}
@@ -137,17 +141,9 @@ func parseOp(exp string) func(int, *Monkey) int {
 		}
 		switch op {
 		case "+":
-			if m.partA {
-				return x + y
-			} else {
-				return x%m.div + y%m.div
-			}
+			return x + y
 		case "*":
-			if m.partA {
-				return x * y
-			} else {
-				return x%m.div + y%m.div
-			}
+			return x * y
 		}
 		return 0
 	}
