@@ -53,3 +53,42 @@ func (s *Set[T]) Has(item T) bool {
 	_, ok := (*s)[item]
 	return ok
 }
+
+func (s Set[T]) Union(other Set[T]) Set[T] {
+	union := Set[T]{}
+	for k := range s {
+		union.Add(k)
+	}
+	for k := range other {
+		union.Add(k)
+	}
+	return union
+}
+
+func (s Set[T]) Subset(other Set[T]) bool {
+	for k := range other {
+		if !s.Has(k) {
+			return false
+		}
+	}
+	return true
+}
+
+func (s Set[T]) Difference(other Set[T]) Set[T] {
+	diff := Set[T]{}
+	for k := range s {
+		if !other.Has(k) {
+			diff.Add(k)
+		}
+	}
+	return diff
+}
+
+func (s Set[T]) First() T {
+	var val T
+	for v := range s {
+		return v
+	}
+
+	return val
+}
