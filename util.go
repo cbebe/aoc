@@ -10,6 +10,14 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+func TrimSplit(f, sep string) []string {
+	trimmed := []string{}
+	for _, v := range strings.Split(f, sep) {
+		trimmed = append(trimmed, strings.TrimSpace(v))
+	}
+	return trimmed
+}
+
 func Lines(f, filename string) []string {
 	return strings.Split(ReadFile(f, filename), "\n")
 }

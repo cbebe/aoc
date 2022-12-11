@@ -41,6 +41,12 @@ var member void
 
 type Set[T comparable] map[T]void
 
+func (s *Set[T]) AddSlice(items []T) {
+	for _, i := range items {
+		s.Add(i)
+	}
+}
+
 func (s *Set[T]) Add(item T) {
 	(*s)[item] = member
 }
