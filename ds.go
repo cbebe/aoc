@@ -2,13 +2,12 @@ package aoc
 
 import (
 	"container/heap"
+	"fmt"
 )
 
 type Stack[T any] []T
 
-func (s *Stack[T]) Push(item T) {
-	*s = append(*s, item)
-}
+func (s *Stack[T]) Push(item T) { *s = append(*s, item) }
 
 func (s *Stack[T]) Pop() (T, bool) {
 	var empty T
@@ -24,9 +23,7 @@ func (s *Stack[T]) Pop() (T, bool) {
 
 type Queue[T any] []T
 
-func (s *Queue[T]) Push(item T) {
-	*s = append(*s, item)
-}
+func (s *Queue[T]) Push(item T) { *s = append(*s, item) }
 
 func (s *Queue[T]) Pop() (T, bool) {
 	var empty T
@@ -51,13 +48,9 @@ func (s *Set[T]) AddSlice(items []T) {
 	}
 }
 
-func (s *Set[T]) Add(item T) {
-	(*s)[item] = member
-}
+func (s *Set[T]) Add(item T) { (*s)[item] = member }
 
-func (s *Set[T]) Remove(item T) {
-	delete(*s, item)
-}
+func (s *Set[T]) Remove(item T) { delete(*s, item) }
 
 func (s *Set[T]) Has(item T) bool {
 	_, ok := (*s)[item]
@@ -121,25 +114,16 @@ type PQItem[T any] struct {
 
 type PriorityQueue[T any] []*PQItem[T]
 
-func (pq PriorityQueue[T]) Len() int { return len(pq) }
-
-func (pq PriorityQueue[T]) Less(i, j int) bool {
-	return (*pq[i]).Priority < (*pq[j]).Priority
-}
-
-func (pq *PriorityQueue[T]) Min() *PQItem[T] {
-	return heap.Remove(pq, 0).(*PQItem[T])
-}
-
+func (pq PriorityQueue[T]) Len() int           { return len(pq) }
+func (pq PriorityQueue[T]) Less(i, j int) bool { return (*pq[i]).Priority < (*pq[j]).Priority }
+func (pq *PriorityQueue[T]) Min() *PQItem[T]   { return heap.Remove(pq, 0).(*PQItem[T]) }
 func (pq PriorityQueue[T]) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
-	pq[i].index = i
-	pq[j].index = j
+	pq[i].index, pq[j].index = i, j
 }
 
 func (pq *PriorityQueue[T]) Push(x any) {
-	n := len(*pq)
-	item := x.(*PQItem[T])
+	n, item := len(*pq), x.(*PQItem[T])
 	item.index = n
 	*pq = append(*pq, item)
 }
@@ -154,19 +138,27 @@ func (pq *PriorityQueue[T]) Pop() any {
 	return item
 }
 
-// update modifies the priority and value of an Item in the queue.
-func (pq *PriorityQueue[T]) Update(item *PQItem[T], value T, priority int) {
-	item.Value = value
-	item.Priority = priority
-	heap.Fix(pq, item.index)
+type Grid[T any] [][]T
+
+func (g Grid[T]) GetCell(x, y int) T {
+	if len(g) > 0 && y >= 0 && y < len(g) && x >= 0 && x < len(g[0]) {
+		return g[y][x]
+	}
+	var empty T
+	return empty
 }
 
-func PriorityQueueFromSlice[T any](items []PQItem[T]) *PriorityQueue[T] {
-	pq := make(PriorityQueue[T], 0, len(items))
-	for _, v := range items {
-		p := v
-		pq = append(pq, &p)
+// Like GetCell but will crash on unsafe access.
+// If err is not nil, the returned value is invalid
+func (g Grid[T]) SafeGetCell(x, y int) (T, error) {
+	var empty T
+	if len(g) == 0 {
+		return empty, fmt.Errorf("grid has no rows")
+	} else if len(g[0]) == 0 {
+		return empty, fmt.Errorf("grid has no columns")
+	} else if y < 0 || y >= len(g) || x < 0 || x >= len(g[0]) {
+		return empty, fmt.Errorf("index out of bounds for grid with %d rows and %d cols: (x: %d, y: %d)", len(g), len(g[0]), x, y)
 	}
-	heap.Init(&pq)
-	return &pq
+
+	return g[y][x], nil
 }

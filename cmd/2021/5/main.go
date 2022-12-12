@@ -8,7 +8,7 @@ import (
 	"github.com/cbebe/aoc"
 )
 
-type Grid [][]int
+type Grid aoc.Grid[int]
 
 func (g *Grid) apply(line Line) {
 	if line.a.x == line.b.x {
@@ -80,10 +80,7 @@ func main() {
 		if m > max {
 			max = m
 		}
-		lines = append(lines, Line{
-			a: Point{a[0], a[1]},
-			b: Point{b[0], b[1]},
-		})
+		lines = append(lines, Line{a: Point{a[0], a[1]}, b: Point{b[0], b[1]}})
 	}
 	size := max + 1
 	grid := make(Grid, 0, size)

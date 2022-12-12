@@ -9,8 +9,6 @@ import (
 	"github.com/cbebe/aoc"
 )
 
-type Grid [][]Point
-
 type Point struct {
 	Value rune
 	X     int
@@ -19,7 +17,7 @@ type Point struct {
 
 var visited aoc.Set[Point]
 var distance map[Point]int
-var grid Grid
+var grid aoc.Grid[*Point]
 
 var pq aoc.PriorityQueue[Point]
 
@@ -36,14 +34,14 @@ func main() {
 	visited = make(aoc.Set[Point])
 	distance = make(map[Point]int)
 	pq = make(aoc.PriorityQueue[Point], 0)
-	grid = make(Grid, 0)
+	grid = make(aoc.Grid[*Point], 0)
 
 	_, filename, _, _ := runtime.Caller(0)
 	for i, v := range aoc.Lines(f, filename) {
 		if v == "" {
 			continue
 		}
-		row := make([]Point, 0, len(v))
+		row := make([]*Point, 0, len(v))
 		for j, w := range v {
 			point := Point{Value: w, X: j, Y: i}
 			distance[point] = math.MaxInt
@@ -60,7 +58,7 @@ func main() {
 					distance[point] = 0
 				}
 			}
-			row = append(row, point)
+			row = append(row, &point)
 		}
 		grid = append(grid, row)
 	}
@@ -91,13 +89,6 @@ func dijkstra() {
 	log.Fatalf("goal not found")
 }
 
-func (g Grid) getCell(x, y int) *Point {
-	if len(g) > 0 && y >= 0 && y < len(g) && x >= 0 && x < len(g[0]) {
-		return &g[y][x]
-	}
-	return nil
-}
-
 func val(r rune) int {
 	if r == 'S' {
 		if partA {
@@ -121,7 +112,7 @@ func (p Point) isNext(other Point) bool {
 
 func (p Point) getChildren() []Point {
 	children := []Point{}
-	for _, other := range []*Point{grid.getCell(p.X-1, p.Y), grid.getCell(p.X+1, p.Y), grid.getCell(p.X, p.Y-1), grid.getCell(p.X, p.Y+1)} {
+	for _, other := range []*Point{grid.GetCell(p.X-1, p.Y), grid.GetCell(p.X+1, p.Y), grid.GetCell(p.X, p.Y-1), grid.GetCell(p.X, p.Y+1)} {
 		if other != nil && p.isNext(*other) {
 			children = append(children, *other)
 		}

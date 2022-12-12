@@ -9,13 +9,13 @@ import (
 )
 
 type Board struct {
-	grid    [][]int
+	grid    aoc.Grid[int]
 	inboard aoc.Set[int]
 	marked  aoc.Set[int]
 }
 
 func NewBoard() Board {
-	return Board{make([][]int, 0, 5), aoc.Set[int]{}, aoc.Set[int]{}}
+	return Board{make(aoc.Grid[int], 0, 5), aoc.Set[int]{}, aoc.Set[int]{}}
 }
 
 func ParseBoards(file string) ([]int, []Board) {
@@ -76,9 +76,9 @@ func PartA(calls []int, boards []Board) {
 	}
 }
 
-func (b *Board) horizontal(x int) bool {
-	for i := 0; i < 5; i++ {
-		if !b.marked.Has(b.grid[x][i]) {
+func (b *Board) horizontal(y int) bool {
+	for x := 0; x < 5; x++ {
+		if !b.marked.Has(b.grid.GetCell(x, y)) {
 			return false
 		}
 	}
@@ -86,21 +86,8 @@ func (b *Board) horizontal(x int) bool {
 }
 
 func (b *Board) vertical(x int) bool {
-	for i := 0; i < 5; i++ {
-		if !b.marked.Has(b.grid[i][x]) {
-			return false
-		}
-	}
-	return true
-}
-
-func (b *Board) diagonal(dir aoc.Direction) bool {
-	for x := 0; x < 5; x++ {
-		y := x
-		if dir == aoc.Down {
-			y = 4 - x
-		}
-		if !b.marked.Has(b.grid[x][y]) {
+	for y := 0; y < 5; y++ {
+		if !b.marked.Has(b.grid.GetCell(x, y)) {
 			return false
 		}
 	}
@@ -124,9 +111,6 @@ func (b *Board) match(c int) int {
 		b.marked.Add(c)
 	}
 	if len(b.marked) >= 5 {
-		if b.diagonal(aoc.Up) || b.diagonal(aoc.Down) {
-
-		}
 		for i := 0; i < 5; i++ {
 			if b.horizontal(i) || b.vertical(i) {
 				return c * b.value()
