@@ -26,6 +26,10 @@ var pq aoc.PriorityQueue[Point]
 var start Point
 var end Point
 
+// const partA = true
+
+const partA = false
+
 func main() {
 	f := "input.txt"
 	// f := "test.txt"
@@ -43,11 +47,18 @@ func main() {
 		for j, w := range v {
 			point := Point{Value: w, X: j, Y: i}
 			distance[point] = math.MaxInt
-			if w == 'S' {
-				start = point
-				distance[point] = 0
-			} else if w == 'E' {
-				end = point
+			if partA {
+				if w == 'S' {
+					start = point
+					distance[point] = 0
+				} else if w == 'E' {
+					end = point
+				}
+			} else {
+				if w == 'E' {
+					start = point
+					distance[point] = 0
+				}
 			}
 			row = append(row, point)
 		}
@@ -63,7 +74,7 @@ func dijkstra() {
 		node := pq.Min()
 		point, dist := node.Value, node.Priority
 		fmt.Println(point)
-		if point == end {
+		if (partA && point == end) || (!partA && point.Value == 'a') {
 			fmt.Println(dist)
 			return
 		}
@@ -71,16 +82,11 @@ func dijkstra() {
 			continue
 		}
 		visited.Add(point)
-		// fmt.Println(len(*distance))
-		// fmt.Println(string(point.Value), dist, point.X, point.Y)
 		for _, p := range point.getChildren() {
 			d, _ := aoc.MinMax(dist+1, distance[p])
 			distance[p] = d
 			pq.Push(&aoc.PQItem[Point]{Value: p, Priority: d})
 		}
-		// if node.Priority != 0 {
-		// 	fmt.Print(string(node.Value.Value))
-		// }
 	}
 	log.Fatalf("goal not found")
 }
@@ -94,7 +100,11 @@ func (g Grid) getCell(x, y int) *Point {
 
 func val(r rune) int {
 	if r == 'S' {
-		return 96
+		if partA {
+			return 96
+		} else {
+			return val('a')
+		}
 	} else if r == 'E' {
 		return 123
 	}
@@ -102,7 +112,11 @@ func val(r rune) int {
 }
 
 func (p Point) isNext(other Point) bool {
-	return val(other.Value) <= val(p.Value) || val(other.Value) == val(p.Value)+1
+	if partA {
+		return val(other.Value) <= val(p.Value) || val(other.Value) == val(p.Value)+1
+	} else {
+		return val(other.Value) >= val(p.Value) || val(other.Value) == val(p.Value)-1
+	}
 }
 
 func (p Point) getChildren() []Point {
