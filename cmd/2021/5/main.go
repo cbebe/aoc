@@ -76,7 +76,7 @@ func main() {
 			continue
 		}
 
-		m := aoc.Max(aoc.MaxSlice(a), aoc.MaxSlice(b))
+		_, m := aoc.MinMax(aoc.MaxSlice(a), aoc.MaxSlice(b))
 		if m > max {
 			max = m
 		}
