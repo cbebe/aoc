@@ -4,27 +4,30 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"os"
 	"runtime"
 
 	"github.com/cbebe/aoc"
 )
 
 func main() {
-	// f := "input.txt"
-	f := "test.txt"
+	f := "input.txt"
+	// f := "test.txt"
 	_, filename, _, _ := runtime.Caller(0)
 	lines := aoc.Lines(f, filename)
 	PartA(lines)
 	// PartB(lines)
 }
 
-func PrintGrid(g Grid[int], start int) {
+func PrintGrid(g aoc.Grid[int], start int) {
 	for y, r := range g {
 		for x, c := range r {
 			if y == 0 && x == start {
 				fmt.Print("+")
 			} else if c == 1 {
 				fmt.Print("#")
+			} else if c == 2 {
+				fmt.Print("o")
 			} else {
 				fmt.Print(".")
 			}
@@ -33,23 +36,54 @@ func PrintGrid(g Grid[int], start int) {
 	}
 }
 
+func CountRest(g aoc.Grid[int]) {
+	total := 0
+	for _, r := range g {
+		for _, c := range r {
+			if c == 2 {
+				total++
+			}
+
+		}
+	}
+	fmt.Println(total - 1)
+	os.Exit(0)
+}
+
 func MoveToCell(g *aoc.Grid[int], current *aoc.Point, x, y int) bool {
+	c, err := g.SafeGetCell(x, y)
+	if err != nil {
+		CountRest(*g)
+	}
+	if c == 0 {
+		*g.GetMutCell(current.X, current.Y) = 0
+		current.X = x
+		current.Y = y
+		*g.GetMutCell(x, y) = 2
+		return false
+	}
 	return true
 }
 
 func PartA(lines []string) {
 	g, start := ParseGrid(lines)
-	g[start][0] = 2
+	g[0][start] = 2
+	// v := 0
 	for {
 		p := aoc.NewPoint(start, 0)
 		for {
 			x, y := p.X, p.Y
-			if MoveToCell(&g, &p, x, y+1) ||
-				MoveToCell(&g, &p, x-1, y+1) || MoveToCell(&g, &p, x+1, y+1) {
+			if MoveToCell(&g, &p, x, y+1) &&
+				MoveToCell(&g, &p, x-1, y+1) && MoveToCell(&g, &p, x+1, y+1) {
 				goto done
 			}
 		}
 	done:
+		// PrintGrid(g, start)
+		// v++
+		// if v > 32 {
+		// 	break
+		// }
 	}
 }
 
