@@ -10,19 +10,20 @@ import (
 	"github.com/cbebe/aoc"
 )
 
+const partA bool = true
+
 func main() {
 	f := "input.txt"
 	// f := "test.txt"
 	_, filename, _, _ := runtime.Caller(0)
 	lines := aoc.Lines(f, filename)
-	PartA(lines)
-	// PartB(lines)
+	Run(lines)
 }
 
 func PrintGrid(g aoc.Grid[int], start int) {
 	for y, r := range g {
 		for x, c := range r {
-			if y == 0 && x == start {
+			if y == 0 && x == start && c != 2 {
 				fmt.Print("+")
 			} else if c == 1 {
 				fmt.Print("#")
@@ -36,7 +37,7 @@ func PrintGrid(g aoc.Grid[int], start int) {
 	}
 }
 
-func CountRest(g aoc.Grid[int]) {
+func CountRest(g aoc.Grid[int], start int) {
 	total := 0
 	for _, r := range g {
 		for _, c := range r {
@@ -46,14 +47,24 @@ func CountRest(g aoc.Grid[int]) {
 
 		}
 	}
-	fmt.Println(total - 1)
+	PrintGrid(g, start)
+	if partA {
+		fmt.Println(total - 1)
+	} else {
+		fmt.Println(total)
+	}
 	os.Exit(0)
 }
 
-func MoveToCell(g *aoc.Grid[int], current *aoc.Point, x, y int) bool {
+func MoveToCell(g *aoc.Grid[int], current *aoc.Point, off, start int) bool {
+	x, y := current.X+off, current.Y+1
 	c, err := g.SafeGetCell(x, y)
 	if err != nil {
-		CountRest(*g)
+		if partA {
+			CountRest(*g, start)
+		} else {
+			log.Fatalf("falling sand went out of bounds")
+		}
 	}
 	if c == 0 {
 		*g.GetMutCell(current.X, current.Y) = 0
@@ -65,25 +76,23 @@ func MoveToCell(g *aoc.Grid[int], current *aoc.Point, x, y int) bool {
 	return true
 }
 
-func PartA(lines []string) {
+func Run(lines []string) {
 	g, start := ParseGrid(lines)
 	g[0][start] = 2
-	// v := 0
 	for {
 		p := aoc.NewPoint(start, 0)
 		for {
-			x, y := p.X, p.Y
-			if MoveToCell(&g, &p, x, y+1) &&
-				MoveToCell(&g, &p, x-1, y+1) && MoveToCell(&g, &p, x+1, y+1) {
+			if MoveToCell(&g, &p, 0, start) &&
+				MoveToCell(&g, &p, -1, start) &&
+				MoveToCell(&g, &p, 1, start) {
+				if !partA && p.X == start && p.Y == 0 {
+					*g.GetMutCell(p.X, p.Y) = 2
+					CountRest(g, start)
+				}
 				goto done
 			}
 		}
 	done:
-		// PrintGrid(g, start)
-		// v++
-		// if v > 32 {
-		// 	break
-		// }
 	}
 }
 
@@ -109,8 +118,14 @@ func ParseGrid(lines []string) (aoc.Grid[int], int) {
 			l = append(l, aoc.NewLine(a, b).Points()...)
 		}
 	}
-	s := aoc.Set[aoc.Point]{}
-	s.AddSlice(l)
+	if partA {
+		return MakePartAGrid(l, minx, maxx, maxy)
+	} else {
+		return MakePartBGrid(l, minx, maxx, maxy)
+	}
+}
+
+func MakePartAGrid(l []aoc.Point, minx, maxx, maxy int) (aoc.Grid[int], int) {
 	g := make(aoc.Grid[int], 0, maxy)
 	for i := 0; i < maxy; i++ {
 		g = append(g, make([]int, maxx-minx+1))
@@ -126,4 +141,24 @@ func ParseGrid(lines []string) (aoc.Grid[int], int) {
 		}
 	}
 	return g, 500 - minx
+}
+
+func MakePartBGrid(l []aoc.Point, minx, maxx, maxy int) (aoc.Grid[int], int) {
+	g := make(aoc.Grid[int], 0, maxy+4)
+	offset := maxy + 3
+	for i := 0; i < maxy+4; i++ {
+		g = append(g, make([]int, (2*(offset+1))))
+	}
+	l = append(l, aoc.NewLine(aoc.NewPoint(500-offset, maxy+2), aoc.NewPoint(500+offset, maxy+2)).Points()...)
+	for _, p := range l {
+		x, y := p.X-(500-offset), p.Y
+		if c := g.GetMutCell(x, y); c != nil {
+			if *c == 0 {
+				*c = 1
+			}
+		} else {
+			log.Fatalf("out of bounds: %d, %d", x, y)
+		}
+	}
+	return g, offset
 }
