@@ -10,27 +10,11 @@ import (
 
 type Grid aoc.Grid[int]
 
-func (g *Grid) apply(line Line) {
-	if line.a.x == line.b.x {
-		min, max := aoc.MinMax(line.a.y, line.b.y)
-		for i := min; i <= max; i++ {
-			(*g)[line.a.x][i]++
-		}
-	} else if line.a.y == line.b.y {
-		min, max := aoc.MinMax(line.a.x, line.b.x)
-		for i := min; i <= max; i++ {
-			(*g)[i][line.a.y]++
-		}
-	} else {
-		for x, y := line.a.x, line.a.y; x != line.b.x || y != line.b.y; x, y = x+X(line), y+Y(line) {
-			(*g)[x][y]++
-		}
-		(*g)[line.b.x][line.b.y]++
+func (g *Grid) apply(line aoc.Line) {
+	for k := range line.Points() {
+		(*g)[k.X][k.Y]++
 	}
 }
-
-func X(l Line) int { return aoc.Abs(l.a.x-l.b.x) / (l.b.x - l.a.x) }
-func Y(l Line) int { return aoc.Abs(l.b.y-l.a.y) / (l.b.y - l.a.y) }
 
 func (g *Grid) count() int {
 	total := 0
@@ -44,16 +28,6 @@ func (g *Grid) count() int {
 	return total
 }
 
-type Point struct {
-	x int
-	y int
-}
-
-type Line struct {
-	a Point
-	b Point
-}
-
 func main() {
 	f := "input.txt"
 	// f := "test.txt"
@@ -61,7 +35,7 @@ func main() {
 	// partA := true
 	partA := false
 
-	lines := []Line{}
+	lines := []aoc.Line{}
 	max := 0
 	_, filename, _, _ := runtime.Caller(0)
 	for _, v := range aoc.Lines(f, filename) {
@@ -80,7 +54,7 @@ func main() {
 		if m > max {
 			max = m
 		}
-		lines = append(lines, Line{a: Point{a[0], a[1]}, b: Point{b[0], b[1]}})
+		lines = append(lines, aoc.Line{A: aoc.NewPoint(a[0], a[1]), B: aoc.NewPoint(b[0], b[1])})
 	}
 	size := max + 1
 	grid := make(Grid, 0, size)

@@ -132,3 +132,45 @@ func Abs[T constraints.Signed](x T) T {
 	}
 	return x
 }
+
+type Point struct {
+	X int
+	Y int
+}
+
+type Line struct {
+	A Point
+	B Point
+}
+
+func NewLine(a, b Point) Line {
+	return Line{a, b}
+}
+
+func NewPoint(x, y int) Point {
+	return Point{x, y}
+}
+
+func X(l Line) int { return Abs(l.A.X-l.B.X) / (l.B.X - l.A.X) }
+func Y(l Line) int { return Abs(l.B.Y-l.A.Y) / (l.B.Y - l.A.Y) }
+
+func (l Line) Points() []Point {
+	s := []Point{}
+	if l.A.X == l.B.X { // Vertical
+		min, max := MinMax(l.A.Y, l.B.Y)
+		for i := min; i <= max; i++ {
+			s = append(s, Point{l.A.X, i})
+		}
+	} else if l.A.Y == l.B.Y { // Horizontal
+		min, max := MinMax(l.A.X, l.B.X)
+		for i := min; i <= max; i++ {
+			s = append(s, Point{i, l.A.Y})
+		}
+	} else { // Diagonal
+		for x, y := l.A.X, l.A.Y; x != l.B.X || y != l.B.Y; x, y = x+X(l), y+Y(l) {
+			s = append(s, Point{x, y})
+		}
+		s = append(s, Point{l.B.X, l.B.Y})
+	}
+	return s
+}

@@ -140,6 +140,13 @@ func (pq *PriorityQueue[T]) Pop() any {
 
 type Grid[T any] [][]T
 
+func (g *Grid[T]) GetMutCell(x, y int) *T {
+	if len(*g) > 0 && y >= 0 && y < len(*g) && x >= 0 && x < len((*g)[0]) {
+		return &(*g)[y][x]
+	}
+	return nil
+}
+
 func (g Grid[T]) GetCell(x, y int) T {
 	if len(g) > 0 && y >= 0 && y < len(g) && x >= 0 && x < len(g[0]) {
 		return g[y][x]
