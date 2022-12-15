@@ -1,7 +1,9 @@
 package aoc
 
 import (
+	// "fmt"
 	"log"
+	"math"
 	"os"
 	"path"
 	"strconv"
@@ -107,12 +109,46 @@ func MinMap[T constraints.Ordered, K comparable](m map[K]T, max T) (K, T) {
 	return key, min
 }
 
+func Min[T constraints.Ordered](a, b T) T {
+	if a > b {
+		return b
+	} else {
+		return a
+	}
+}
+
+func Max[T constraints.Ordered](a, b T) T {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
+
 func MinMax[T constraints.Ordered](a, b T) (T, T) {
 	if a > b {
 		return b, a
 	} else {
 		return a, b
 	}
+}
+
+func MinMaxInt(a, b int, s ...int) (int, int) {
+	if len(s) == 0 {
+		return MinMax(a, b)
+	}
+
+	arr := append(s, a, b)
+	min, max := math.MaxInt, 0
+	for _, v := range arr {
+		if v > max {
+			max = v
+		}
+		if v < min {
+			min = v
+		}
+	}
+	return min, max
 }
 
 // Oof at Golang generics
