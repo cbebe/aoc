@@ -8,7 +8,7 @@ import (
 	"github.com/cbebe/aoc"
 )
 
-const partA bool = true
+var theY int
 
 type RangeGrid struct {
 	grid aoc.Grid[int]
@@ -30,11 +30,30 @@ func (g *RangeGrid) GetMutRangeCell(x, y int) *int {
 	return g.grid.GetMutCell(x-g.minx, y-g.miny)
 }
 
+func LL() {
+	for i := 0; i < 80; i++ {
+		fmt.Print("#")
+	}
+	fmt.Println()
+}
+
 func main() {
-	f := "input.txt"
-	// f := "test.txt"
-	_, filename, _, _ := runtime.Caller(0)
-	lines := aoc.Lines(f, filename)
+	pts = make(aoc.Set[aoc.Point])
+	var f, filename string
+	var lines []string
+	f, theY = "input.txt", 2000000
+	_, filename, _, _ = runtime.Caller(0)
+	lines = aoc.Lines(f, filename)
+	Run(lines)
+	// LL()
+	// f, theY = "test.txt", 10
+	// _, filename, _, _ = runtime.Caller(0)
+	// lines = aoc.Lines(f, filename)
+	// Run(lines)
+	// LL()
+	f, theY = "test-2.txt", 5
+	_, filename, _, _ = runtime.Caller(0)
+	lines = aoc.Lines(f, filename)
 	Run(lines)
 }
 
@@ -58,20 +77,23 @@ func PrintGrid(g aoc.Grid[int]) {
 	}
 }
 
+var pts aoc.Set[aoc.Point]
+
 func Run(lines []string) {
 	g, bs := ParseGrid(lines)
 	for _, v := range bs {
 		v.MarkEmpty(&g)
 	}
-	y := 10
 	total := 0
-	for x := g.minx; x < g.maxx; x++ {
-		if c := g.GetMutRangeCell(x, y); c != nil && *c == -1 {
+	for x := g.minx; x <= g.maxx; x++ {
+		if c := g.GetMutRangeCell(x, theY); c != nil && *c == -1 {
 			total++
 		}
 	}
-	PrintGrid(g.grid)
+	// PrintGrid(g.grid)
 	fmt.Println(total)
+	fmt.Println(len(pts))
+	fmt.Println(total + len(pts))
 }
 
 type BS struct {
@@ -80,28 +102,31 @@ type BS struct {
 }
 
 func MarkCell(g *RangeGrid, x, y int) {
-	if c := g.GetMutRangeCell(x, y); c != nil && *c == 0 {
+	c := g.GetMutRangeCell(x, y)
+	if c != nil && *c == 0 {
 		*c = -1
+	} else if c == nil && y == theY {
+		pts.Add(aoc.NewPoint(x, y))
 	}
-}
-
-func MarkNeighbours(g *RangeGrid, x, y int) {
-	MarkCell(g, x+1, y)
-	MarkCell(g, x-1, y)
-	MarkCell(g, x, y+1)
-	MarkCell(g, x, y-1)
 }
 
 func (bs BS) MarkEmpty(g *RangeGrid) {
 	x, y := bs.s.X, bs.s.Y
 	max := aoc.Abs(bs.b.X-x) + aoc.Abs(bs.b.Y-y)
-	for i := 1; i <= max; i++ {
-		a, b, c, d := aoc.NewPoint(x+i, y), aoc.NewPoint(x, y+i), aoc.NewPoint(x-i, y), aoc.NewPoint(x, y-i)
-		m, n, o, p := aoc.NewPoint(x+i, y), aoc.NewPoint(x, y-i), aoc.NewPoint(x-i, y), aoc.NewPoint(x, y+i)
-		l1, l2, l3, l4 := aoc.NewLine(a, b).Points(), aoc.NewLine(c, d).Points(), aoc.NewLine(m, n).Points(), aoc.NewLine(o, p).Points()
-		for _, c := range append(append(append(l1, l2...), l3...), l4...) {
-			MarkCell(g, c.X, c.Y)
-		}
+	if !aoc.InRange(theY, y-max, y+max) {
+		fmt.Println("skipped", bs)
+		return
+	}
+	fmt.Println("---------")
+	fmt.Println("bs:", bs)
+	fmt.Println("max:", max)
+	d := max - (aoc.Abs(y - theY))
+	var a, b aoc.Point
+	a = aoc.NewPoint(x-d, theY)
+	b = aoc.NewPoint(x+d, theY)
+	fmt.Println("a,b:", a, b)
+	for _, c := range aoc.NewLine(a, b).Points() {
+		MarkCell(g, c.X, c.Y)
 	}
 }
 
@@ -123,13 +148,18 @@ func ParseGrid(lines []string) (RangeGrid, []BS) {
 		s := aoc.NewPoint(sx, sy)
 		arr = append(arr, BS{b, s})
 	}
-	g := NewRangeGrid(maxx, minx, maxy, miny)
-	fmt.Println("make grid ok")
+	fmt.Println(arr)
+	// fmt.Println(theY, theY)
+	g := NewRangeGrid(maxx, minx, theY, theY)
+	// g := NewRangeGrid(maxx, minx, maxy, miny)
 	for _, bs := range arr {
-		*g.GetMutRangeCell(bs.b.X, bs.b.Y) = 1
-		*g.GetMutRangeCell(bs.s.X, bs.s.Y) = 2
+		if b := g.GetMutRangeCell(bs.b.X, bs.b.Y); b != nil {
+			*b = 1
+		}
+		if s := g.GetMutRangeCell(bs.s.X, bs.s.Y); s != nil {
+			*s = 2
+		}
 	}
 
-	fmt.Println("make grid ok")
 	return g, arr
 }
