@@ -1,25 +1,11 @@
 const std = @import("std");
 
-pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+pub fn main() !void {}
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
-
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    try bw.flush(); // don't forget to flush!
-}
-
-// const data = .{ @embedFile("./input/1/test-a.txt"), 142 };
-// const data = .{ @embedFile("./input/1/test-b.txt"), 281 };
-// const data = .{ @embedFile("./input/1/input.txt"), 55477 }; // a
-const data = .{ @embedFile("./input/1/input.txt"), 54431 }; // b
+// const data_1a = .{ @embedFile("./input/1/test-a.txt"), 142 };
+// const data_1b = .{ @embedFile("./input/1/test-b.txt"), 281 };
+const data_1a = .{ @embedFile("./input/1/input.txt"), 55477 };
+const data_1b = .{ @embedFile("./input/1/input.txt"), 54431 };
 
 pub fn solve_1a(d: []const u8) i32 {
     var it = std.mem.split(u8, d, "\n");
@@ -37,7 +23,7 @@ pub fn solve_1a(d: []const u8) i32 {
         }
         if (first != null and last != null) {
             var val = (first.? - '0') * @as(i32, 10) + (last.? - '0');
-            std.debug.print("{s} {d}\n", .{ x, val });
+            // std.debug.print("{s} {d}\n", .{ x, val });
             sum += val;
         }
     }
@@ -113,7 +99,7 @@ pub fn solve_1b(d: []const u8) i32 {
         }
         if (first != null and last != null) {
             var val = first.? * @as(i32, 10) + last.?;
-            std.debug.print("{s} {d}\n", .{ x, val });
+            // std.debug.print("{s} {d}\n", .{ x, val });
             sum += val;
         }
     }
@@ -121,7 +107,7 @@ pub fn solve_1b(d: []const u8) i32 {
     return sum;
 }
 
-test "simple test" {
-    try std.testing.expectEqual(@as(i32, data[1]), solve_1a(data[0]));
-    try std.testing.expectEqual(@as(i32, data[1]), solve_1b(data[0]));
+test "day1" {
+    try std.testing.expectEqual(@as(i32, data_1a[1]), solve_1a(data_1a[0]));
+    try std.testing.expectEqual(@as(i32, data_1b[1]), solve_1b(data_1b[0]));
 }

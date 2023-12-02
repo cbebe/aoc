@@ -1,5 +1,5 @@
 # Advent of Code
 
-My language of choice: Go
+My language of choice: Zig
 
-Started 2022, but I'm doing 2021 for more practice
+I should probably learn about the standard library :sob:
