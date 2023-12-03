@@ -7,21 +7,11 @@ pub fn main() !void {}
 const data_2a = .{ @embedFile("./input/2/input.txt"), 2439 };
 const data_2b = .{ @embedFile("./input/2/input.txt"), 63711 };
 
-pub fn split(x: []const u8, c: []const u8) std.mem.SplitIterator(u8) {
-    return std.mem.split(u8, x, c);
-}
-
-pub fn trim_char(x: []const u8, c: []const u8) []const u8 {
-    return std.mem.trim(u8, x, c);
-}
-
-pub fn trim(x: []const u8) []const u8 {
-    return std.mem.trim(u8, x, " ");
-}
-
-pub fn int(x: []const u8) !i32 {
-    return std.fmt.parseInt(i32, x, 10);
-}
+const aoc = @import("aoc.zig");
+const split = aoc.split;
+const trim_char = aoc.trim_char;
+const trim = aoc.trim;
+const int = aoc.int;
 
 pub fn solve_2a(d: []const u8, alloc: std.mem.Allocator) !i32 {
     var it = split(d, "\n");
