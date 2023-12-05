@@ -7,14 +7,11 @@ pub fn main() !void {}
 const data_1a = .{ @embedFile("./input/1/input.txt"), 55477 };
 const data_1b = .{ @embedFile("./input/1/input.txt"), 54431 };
 
-const aoc = @import("aoc.zig");
-const split = aoc.split;
-const trim_char = aoc.trim_char;
-const trim = aoc.trim;
-const int = aoc.int;
+const A = @import("aoc.zig");
 
-pub fn solve_1a(d: []const u8) i32 {
-    var it = split(d, "\n");
+pub fn solve1a(data: []const u8, alloc: std.mem.Allocator) !i32 {
+    _ = alloc;
+    var it = A.split(data, "\n");
     var sum: i32 = 0;
     while (it.next()) |x| {
         var first: ?u8 = null;
@@ -37,8 +34,9 @@ pub fn solve_1a(d: []const u8) i32 {
     return sum;
 }
 
-pub fn solve_1b(d: []const u8) i32 {
-    var it = split(d, "\n");
+pub fn solve1b(data: []const u8, alloc: std.mem.Allocator) !i32 {
+    _ = alloc;
+    var it = A.split(data, "\n");
     var sum: i32 = 0;
     // WHY
     while (it.next()) |x| {
@@ -114,6 +112,6 @@ pub fn solve_1b(d: []const u8) i32 {
 }
 
 test "day1" {
-    try std.testing.expectEqual(@as(i32, data_1a[1]), solve_1a(data_1a[0]));
-    try std.testing.expectEqual(@as(i32, data_1b[1]), solve_1b(data_1b[0]));
+    try A.testDay(solve1a, data_1a);
+    try A.testDay(solve1b, data_1b);
 }

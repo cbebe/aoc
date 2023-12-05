@@ -7,38 +7,34 @@ pub fn main() !void {}
 const data_2a = .{ @embedFile("./input/2/input.txt"), 2439 };
 const data_2b = .{ @embedFile("./input/2/input.txt"), 63711 };
 
-const aoc = @import("aoc.zig");
-const split = aoc.split;
-const trim_char = aoc.trim_char;
-const trim = aoc.trim;
-const int = aoc.int;
+const A = @import("aoc.zig");
 
-pub fn solve_2a(d: []const u8, alloc: std.mem.Allocator) !i32 {
-    var it = split(d, "\n");
+pub fn solve2a(data: []const u8, alloc: std.mem.Allocator) !i32 {
+    var it = A.split(data, "\n");
     var sum: i32 = 0;
     var map = std.StringHashMap(i32).init(alloc);
-    defer map.deinit();
     try map.put("green", 13);
     try map.put("red", 12);
     try map.put("blue", 14);
+    defer map.deinit();
     while (it.next()) |x| {
         if (x.len == 0) {
             continue;
         }
         var fail = false;
-        var it2 = split(x, ":");
+        var it2 = A.split(x, ":");
         const a = it2.next().?;
-        const b = trim(it2.next().?);
-        var it3 = split(a, " ");
+        const b = A.trim(it2.next().?);
+        var it3 = A.split(a, " ");
         _ = it3.next();
-        const game_id = try int(it3.next().?);
+        const game_id = try A.int(it3.next().?);
 
-        var sets = split(b, ";");
+        var sets = A.split(b, ";");
         while (sets.next()) |s| {
-            var cubes = split(trim(s), ", ");
+            var cubes = A.split(A.trim(s), ", ");
             while (cubes.next()) |c| {
-                var t = split(c, " ");
-                const val = try int(t.next().?);
+                var t = A.split(c, " ");
+                const val = try A.int(t.next().?);
                 if (val > map.get(t.next().?).?) {
                     fail = true;
                     break;
@@ -56,32 +52,32 @@ pub fn solve_2a(d: []const u8, alloc: std.mem.Allocator) !i32 {
     return sum;
 }
 
-pub fn solve_2b(d: []const u8, alloc: std.mem.Allocator) !i32 {
-    var it = split(d, "\n");
+pub fn solve2b(data: []const u8, alloc: std.mem.Allocator) !i32 {
+    var it = A.split(data, "\n");
     var sum: i32 = 0;
-    var map = std.StringHashMap(i32).init(alloc);
-    defer map.deinit();
     while (it.next()) |x| {
         if (x.len == 0) {
             continue;
         }
+        var map = std.StringHashMap(i32).init(alloc);
+        defer map.deinit();
         try map.put("green", 0);
         try map.put("red", 0);
         try map.put("blue", 0);
-        var it2 = split(x, ":");
+        var it2 = A.split(x, ":");
         const a = it2.next().?;
-        const b = trim(it2.next().?);
-        var it3 = split(a, " ");
+        const b = A.trim(it2.next().?);
+        var it3 = A.split(a, " ");
         _ = it3.next();
-        const game_id = try int(it3.next().?);
+        const game_id = try A.int(it3.next().?);
         _ = game_id;
 
-        var sets = split(b, ";");
+        var sets = A.split(b, ";");
         while (sets.next()) |s| {
-            var cubes = split(trim(s), ", ");
+            var cubes = A.split(A.trim(s), ", ");
             while (cubes.next()) |c| {
-                var t = split(c, " ");
-                const val = try int(t.next().?);
+                var t = A.split(c, " ");
+                const val = try A.int(t.next().?);
                 const colour = t.next().?;
                 if (val > map.get(colour).?) {
                     try map.put(colour, val);
@@ -97,6 +93,6 @@ pub fn solve_2b(d: []const u8, alloc: std.mem.Allocator) !i32 {
 }
 
 test "day2" {
-    try std.testing.expectEqual(@as(i32, data_2a[1]), try solve_2a(data_2a[0], std.testing.allocator));
-    try std.testing.expectEqual(@as(i32, data_2b[1]), try solve_2b(data_2b[0], std.testing.allocator));
+    try A.testDay(solve2a, data_2a);
+    try A.testDay(solve2b, data_2b);
 }
