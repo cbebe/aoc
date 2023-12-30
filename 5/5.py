@@ -85,4 +85,7 @@ for x in maps:
         # if not found:
             # new_ss.append(g)
     ss = new_ss
-print(min(ss, key=lambda x: x[0]))
+
+# print(min(ss))
+
+print(min(ss, key=lambda x: x[0])[0])
